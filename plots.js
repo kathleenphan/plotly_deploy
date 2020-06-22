@@ -10,16 +10,18 @@ function init() {
         .text(sample)
         .property("value", sample);
     });
+    buildCharts(sampleNames[0]);
+    buildMetadata(sampleNames[0]);
 })}
 
-init();
 
 function optionChanged(newSample) {
-  buildMetadata(newSample);
   buildCharts(newSample);
+  buildMetadata(newSample);
 }
 
-function buildMetadata(sample) {
+
+ function buildMetadata(sample) {
   d3.json("samples.json").then((data) => {
     var metadata = data.metadata;
     var resultArray = metadata.filter(sampleObj => sampleObj.id == sample);
@@ -36,7 +38,7 @@ function buildMetadata(sample) {
     PANEL.append("h6").text("wfreq: " + result.wfreq);
     PANEL.append("h6").text()
   });
-}
+ }
 
 function buildCharts(sample) {
   d3.json("samples.json").then((data) => {
@@ -49,11 +51,14 @@ function buildCharts(sample) {
   var otu_labels = subject.otu_labels;
 
   // Slice the first 10 objects for plotting
-sample_values = sample_values.slice(0, 10);
+x_values = sample_values.slice(0, 10).reverse();
+y_values = otu_ids.slice(0,10).map(id=>`OTU ${id}`).reverse();
+text_values = otu_labels.slice(0,10).reverse();
 // Trace1 
 var trace1 = {
-  x: sample_values,
-  text: otu_labels,
+  x: x_values,
+  y: y_values,
+  text: text_values,
   name: "OTUs",
   type: "bar",
   orientation: "h"
@@ -78,7 +83,8 @@ var trace2 = {
   mode: 'markers',
   marker: {
     color: otu_ids,
-    size: sample_values
+    size: sample_values,
+    colorscale: 'Earth'
   },
   text: otu_labels
 };
@@ -93,41 +99,6 @@ var layout = {
 };
 
 Plotly.newPlot('bubble', data2, layout);
-
-var wfreq = subject.wfreq;
-var data3 = [
-  {
-    type: "indicator",
-    mode: "gauge+number",
-    value: wfreq,
-    title: { text: "Belly Button Washing Frequency", font: { size: 18 }},
-      gauge: {
-        axis: { range: [0, 9] },
-      steps: [
-        { range: [0, 1], color: "floralwhite" },
-        { range: [1, 2], color: "cornsilk" },
-        { range: [2, 3], color: "blanchedalmond" },
-        { range: [3, 4], color: "beige" },
-        { range: [4, 5], color: "lightgray" },
-        { range: [5, 6], color: "honeydew" },
-        { range: [6, 7], color: "mediumaquamarine" },
-        { range: [7, 8], color: "mediumseagreen" },
-        { range: [8, 9], color: "seagreen" },
-      ],
-     threshold: {
-        line: { color: "red", width: 2 },
-        thickness: 0.75,
-        value: wfreq
-     }
-      }
-  }
-];
-
-var layout2 = {
-  width:500,
-  height:400,
-  margin: { t: 25, r: 25, l: 25, b: 25 }
-};
-
-Plotly.newPlot('gauge', data3, layout2);
   })}
+
+  init();
